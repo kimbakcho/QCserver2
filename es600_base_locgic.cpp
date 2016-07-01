@@ -784,7 +784,6 @@ void es600_base_locgic::es600_base_loop(){
             moldtempstr.append(QString("%1").arg(0.0));
         }
 
-
         QString timerstr;
         double injtime = datamap->value(QString("%1").arg(mb_injtime))->value.toDouble()/10.0;
         double cooltime = datamap->value(QString("%1").arg(mb_cooltime))->value.toDouble()/10.0;

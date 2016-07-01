@@ -889,6 +889,9 @@ void MainWindow::on_maintablewidget_cellClicked(int row, int column)
 
 void MainWindow::on_serverstartbtn_clicked()
 {
+
+
+
     ui->ipadderbtn->setEnabled(false);
     ui->deletebtn->setEnabled(false);
     QList<mslotitem *> valuelist = itemmap->values();
