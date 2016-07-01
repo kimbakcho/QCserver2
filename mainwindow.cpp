@@ -889,7 +889,7 @@ void MainWindow::on_maintablewidget_cellClicked(int row, int column)
 
 void MainWindow::on_serverstartbtn_clicked()
 {
-
+    //https://sites.google.com/site/auth2233445/test1/hyeobjinpiel
 
 
     ui->ipadderbtn->setEnabled(false);
