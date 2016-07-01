@@ -20,7 +20,7 @@ bool gefranseven_base_logic::init(){
     litequery1.next();
     if(litequery1.value("remoteservertype").toString().compare("MYSQL")==0){
         remotedb = QSqlDatabase::addDatabase("QMYSQL",parent_item->iptext);
-    }else if("ODBC"){
+    }else if(litequery1.value("remoteservertype").toString().compare("ODBC")==0){
         remotedb = QSqlDatabase::addDatabase("QODBC",parent_item->iptext);
     }
     remotedb.setHostName(litequery1.value("remoteserverip").toString());

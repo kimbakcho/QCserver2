@@ -12,7 +12,6 @@ es600_modbus_thread::es600_modbus_thread(QObject *parent_src){
     modbus_set_slave(parent_des->ctx,255);
 
     connect(this,SIGNAL(sig_statue_update(bool)),parent_des,SLOT(slot_statue_update(bool)));
-
 }
 
 void es600_modbus_thread::run(){
@@ -52,3 +51,4 @@ void es600_modbus_thread::run(){
        parent_des->mutex.unlock();
     }
 }
+

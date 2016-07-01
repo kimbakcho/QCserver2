@@ -20,6 +20,7 @@
 #include "gefranseven_base_logic.h"
 #include "globalheader.h"
 #include "es600_base_locgic.h"
+#include <QSqlError>
 
 class mslotitem : public QObject
 {
@@ -34,6 +35,7 @@ public:
     QPushButton *setupbtn;
     QString iptext;
     QSqlDatabase remotedb;
+    QSqlDatabase localdb;
     QString machinenametext;
     QTimer maintimer;
     Bnr_base_locgic *bnr_base_logic;

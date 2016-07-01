@@ -549,7 +549,7 @@ void MainWindow::remotesql_init(){
                              "temp21_set float NOT NULL DEFAULT '0' ,"
                              "temp21_up float NOT NULL DEFAULT '0' ,"
                              "temp21_down float NOT NULL DEFAULT '0' ,"
-                             "emp21_real float NOT NULL DEFAULT '0' ,"
+                             "temp21_real float NOT NULL DEFAULT '0' ,"
                              "temp21_name VARCHAR(50) NOT NULL DEFAULT 'temp21' ,"
                              "temp21_onoff INT NOT NULL DEFAULT '0',"
                              "modift_version INT NOT NULL DEFAULT '0' ,"
@@ -558,7 +558,6 @@ void MainWindow::remotesql_init(){
 
                          ";"
                     ));
-
     }
 
    if(type == MYSQL){
@@ -776,11 +775,92 @@ void MainWindow::remotesql_init(){
                                       ")"
                                       ";");
     }
+    if(type == MYSQL){
 
+    }else if(type == ODBC){
+        mysqlquery1.exec("CREATE TABLE [dbo].[shot_data]("
+                         "[idx] [numeric](9, 0) IDENTITY(1,1) NOT NULL,"
+                         "[Machine_Name] [varchar](32) NULL,"
+                         "[Additional_Info_1] [varchar](32) NULL,"
+                         "[Additional_Info_2] [varchar](32) NULL,"
+                         "[TimeStamp] [datetime] NULL,"
+                         "[Shot_Number] [numeric](9, 0) NULL,"
+                         "[NGmark] [smallint] NULL,"
+                         "[Injection_Time] [real] NULL,"
+                         "[Filling_Time] [real] NULL,"
+                         "[Plasticizing_Time] [real] NULL,"
+                         "[Cycle_Time] [real] NULL,"
+                         "[Clamp_Close_Time] [real] NULL,"
+                         "[Cushion_Position] [real] NULL,"
+                         "[Switch_Over_Position] [real] NULL,"
+                         "[Plasticizing_Position] [real] NULL,"
+                         "[Clamp_Open_Position] [real] NULL,"
+                         "[Max_Injection_Speed] [real] NULL,"
+                         "[Max_Screw_RPM] [real] NULL,"
+                         "[Average_Screw_RPM] [real] NULL,"
+                         "[Max_Injection_Pressure] [real] NULL,"
+                         "[Max_Switch_Over_Pressure] [real] NULL,"
+                         "[Max_Back_Pressure] [real] NULL,"
+                         "[Average_Back_Pressure] [real] NULL,"
+                         "[Barrel_Temperature_1] [real] NULL,"
+                         "[Barrel_Temperature_2] [real] NULL,"
+                         "[Barrel_Temperature_3] [real] NULL,"
+                         "[Barrel_Temperature_4] [real] NULL,"
+                         "[Barrel_Temperature_5] [real] NULL,"
+                         "[Barrel_Temperature_6] [real] NULL,"
+                         "[Barrel_Temperature_7] [real] NULL,"
+                         "[Hopper_Temperature] [real] NULL,"
+                         "[Mold_Temperature_1] [real] NULL,"
+                         "[Mold_Temperature_2] [real] NULL,"
+                         "[Mold_Temperature_3] [real] NULL,"
+                         "[Mold_Temperature_4] [real] NULL,"
+                         "[Mold_Temperature_5] [real] NULL,"
+                         "[Mold_Temperature_6] [real] NULL,"
+                         "[Mold_Temperature_7] [real] NULL,"
+                         "[Mold_Temperature_8] [real] NULL,"
+                         "[Mold_Temperature_9] [real] NULL,"
+                         "[Mold_Temperature_10] [real] NULL,"
+                     "PRIMARY KEY CLUSTERED "
+                     "("
+                     "    [idx] ASC"
+                     ")WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]"
+                     ") ON [PRIMARY]"
+                    );
+    }
+    if(type == MYSQL){
 
+    }else if(type == ODBC){
+         mysqlquery1.exec("CREATE TABLE [dbo].[shot_data_rec]("
+                          "[rec_idx] [numeric](9, 0) IDENTITY(1,1) NOT NULL,"
+                          "[Machine_Name] [varchar](32) NULL,"
+                          "[Additional_Info_1] [varchar](32) NULL,"
+                          "[Additional_Info_2] [varchar](32) NULL,"
+                          "[TimeStamp] [datetime] NULL,"
+                          "[Shot_Number] [numeric](9, 0) NULL,"
+                          "[Inj_Velocity] [varchar](60) NULL,"
+                          "[Inj_Pressure] [varchar](60) NULL,"
+                          "[Inj_Position] [varchar](60) NULL,"
+                          "[SOV_Time] [real] NULL,"
+                          "[SOV_Position] [real] NULL,"
+                          "[Hld_Pressure] [varchar](60) NULL,"
+                          "[Hld_Time] [varchar](60) NULL,"
+                          "[Hld_Vel] [varchar](60) NULL,"
+                          "[Chg_Position] [varchar](60) NULL,"
+                          "[Chg_Speed] [varchar](60) NULL,"
+                          "[BackPressure] [varchar](60) NULL,"
+                          "[Suckback_Position] [varchar](60) NULL,"
+                          "[Suckback_Speed] [varchar](60) NULL,"
+                          "[Barrel_Temperature] [varchar](60) NULL,"
+                          "[Mold_Temperature] [varchar](60) NULL,"
+                          "[Timer] [varchar](60) NULL,"
+                      "PRIMARY KEY CLUSTERED "
+                      "("
+                      "    [rec_idx] ASC"
+                      ")WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]"
+                      ") ON [PRIMARY]"
+                      );
 
-    qDebug()<<mysqlquery1.lastQuery();
-    qDebug()<<mysqlquery1.lastError().text();
+    }
 }
 
 void MainWindow::on_deletebtn_clicked()
