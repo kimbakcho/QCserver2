@@ -1,0 +1,121 @@
+#ifndef IWONIL_BASE_LOCGIC_H
+#define IWONIL_BASE_LOCGIC_H
+
+#include <QObject>
+#include <QMap>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QUrl>
+#include <QUrlQuery>
+#include <QNetworkReply>
+#if QT_VERSION < QT_VERSION_CHECK(5,6,0)
+#include <QWebPage>
+#include <QWebFrame>
+#include <QWebElement>
+#endif
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QWaitCondition>
+#include <QMutex>
+#include "iwonil_modbus_thread.h"
+#include "modbus.h"
+
+#define cycle_count 20625
+#define inj_time1 20668
+#define inj_time2 20652
+#define filling_time 22306
+#define cycle_time 20665
+#define inj_position 21558
+#define inj_pressure 21562
+#define suckback_position 19658
+#define cuthion_position 22287
+#define switch_over_position 22301
+#define switch_over_pressure 22302
+#define switch_over_speed 22303
+#define avg_inj_pre 22284
+#define avg_chg_pre 22287
+#define inj_speed 22307
+#define max_inj_pre 22288
+#define max_inj_spd 22313
+#define temp1 45058
+#define temp2 45059
+#define temp3 45060
+#define temp4 45061
+#define oiltemp1 45065
+#define oiltemp2 45063
+#define temp1set 43023
+#define temp2set 43024
+#define temp3set 43025
+#define temp4set 43026
+#define hopertempset1 43029
+#define hopertempset2 43027
+#define oiltempset1 43030
+#define oiltempset2 43028
+
+#define moldtempreal1 36866
+#define moldtempreal2 36867
+#define moldtempreal3 36868
+#define moldtempreal4 36869
+#define moldtempreal5 36870
+#define moldtempreal6 36871
+#define moldtempreal7 36872
+#define moldtempreal8 36873
+
+#define moldtempset1 36831
+#define moldtempset2 36832
+#define moldtempset3 36833
+#define moldtempset4 36834
+#define moldtempset5 36835
+#define moldtempset6 36836
+#define moldtempset7 36837
+#define moldtempset8 36838
+
+
+class iwonilvalue {
+    public:
+        QString name;
+        QString value;
+        iwonilvalue(){
+
+        }
+        iwonilvalue(QString name,QString value){
+            this->name=name;
+            this->value=value;
+        }
+};
+
+
+class iwonil_base_locgic : public QObject
+{
+    Q_OBJECT
+public:
+    explicit iwonil_base_locgic(QObject *parentmslot,QObject *parent = 0);
+    QObject *parentmslot;
+    QMap<QString,iwonilvalue *> *datamap; //<name,value>
+    bool initflag;
+    bool init();
+    void loop();
+    QSqlDatabase remotedb;
+    iwonil_modbus_thread *modbus_thread;
+    QWaitCondition waitcondition;
+    QMutex mutex;
+    QString ip;
+    QSqlDatabase iwonildb;
+    QSqlDatabase litedb;
+    QVector<int> addrlist;
+
+     modbus_t *ctx;
+
+     int typeDB;
+     bool queryresult;
+     int before_shotcount;
+     int current_shotcount;
+     void iwonil_base_loop();
+
+signals:
+
+public slots:
+     void slot_statue_update(bool statue);
+};
+
+#endif // IWONIL_BASE_LOCGIC_H

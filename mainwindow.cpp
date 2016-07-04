@@ -85,7 +85,7 @@ void MainWindow::on_ipadderbtn_clicked()
     }
     ui->maintablewidget->insertRow(ui->maintablewidget->rowCount());
     int countnumber = ui->maintablewidget->rowCount() - 1;
-    mslotitem *temp_item = new mslotitem(ui->QLaddip->text(),ui->QLaddmachinename->text());
+    mslotitem *temp_item = new mslotitem(ui->QLaddip->text(),ui->QLaddmachinename->text(),this);
     itemmap->insert(temp_item->machinenametext,temp_item);
     ui->maintablewidget->setCellWidget(countnumber,ITEMCONNECT,temp_item->connectlabel);
     ui->maintablewidget->setCellWidget(countnumber,ITEMSTATUS,temp_item->status);
@@ -225,6 +225,8 @@ void MainWindow::remotesql_init(){
                          "`weight` DOUBLE UNSIGNED NOT NULL DEFAULT '0' COMMENT '',"
                          "`run_mode` TEXT NULL DEFAULT NULL COMMENT '',"
                          "`warning_flag` INT(11) NOT NULL DEFAULT '0',"
+                         "`iwonilhoper` INT(11) NOT NULL DEFAULT '7',"
+                         "`iwoniloil` INT(11) NOT NULL DEFAULT '8',"
                          "UNIQUE INDEX `machine_name` (`machine_name`)"
                      ")"
                       "COLLATE='utf8_bin'"
@@ -253,6 +255,8 @@ void MainWindow::remotesql_init(){
                              "weight float NOT NULL DEFAULT '0' ,"
                              "run_mode TEXT NULL DEFAULT NULL ,"
                              "warning_flag INT NOT NULL DEFAULT '0',"
+                             "iwonilhoper INT NOT NULL DEFAULT '7'  ,"
+                             "iwoniloil INT NOT NULL DEFAULT '8'  ,"
                              "UNIQUE (machine_name)"
                          ")"
                           ""
@@ -779,7 +783,7 @@ void MainWindow::remotesql_init(){
 
     }else if(type == ODBC){
         mysqlquery1.exec("CREATE TABLE [dbo].[shot_data]("
-                         "[idx] [numeric](9, 0) IDENTITY(1,1) NOT NULL,"
+                         "[idx] [numeric](9, 0) IDENTITY(1,1) NOT NULL DEFAULT '0',"
                          "[Machine_Name] [varchar](32) NULL,"
                          "[Additional_Info_1] [varchar](32) NULL,"
                          "[Additional_Info_2] [varchar](32) NULL,"
@@ -831,7 +835,7 @@ void MainWindow::remotesql_init(){
 
     }else if(type == ODBC){
          mysqlquery1.exec("CREATE TABLE [dbo].[shot_data_rec]("
-                          "[rec_idx] [numeric](9, 0) IDENTITY(1,1) NOT NULL,"
+                          "[rec_idx] [numeric](9, 0) IDENTITY(1,1) NOT NULL DEFAULT '0',"
                           "[Machine_Name] [varchar](32) NULL,"
                           "[Additional_Info_1] [varchar](32) NULL,"
                           "[Additional_Info_2] [varchar](32) NULL,"
@@ -861,6 +865,72 @@ void MainWindow::remotesql_init(){
                       );
 
     }
+    if(type == MYSQL){
+
+    }else if(type == ODBC){
+        mysqlquery1.exec("CREATE TABLE [dbo].[iwonil_shot_data]("
+                        "[idx_count] [numeric](18, 0) IDENTITY(1,1) NOT NULL,"
+                        "[machine_name] [text] NOT NULL,"
+                        "[shot_date] [date] NOT NULL,"
+                        "[shot_time] [time](7) NOT NULL,"
+                        "[cycle_count] [numeric](18, 0) NOT NULL,"
+                        "[inj_time1] [float] NOT NULL,"
+                        "[inj_time2] [float] NOT NULL,"
+                        "[filling_time] [float] NOT NULL,"
+                        "[cycle_time] [float] NOT NULL,"
+                        "[inj_position] [float] NOT NULL,"
+                        "[inj_pressure] [float] NOT NULL,"
+                        "[suckback_position] [float] NOT NULL,"
+                        "[cuthion_position] [float] NOT NULL,"
+                        "[switch_over_position] [float] NOT NULL,"
+                        "[switch_over_pressure] [float] NOT NULL,"
+                        "[switch_over_speed] [float] NOT NULL,"
+                        "[avg_inj_pre] [float] NOT NULL,"
+                        "[avg_chg_pre] [float] NOT NULL,"
+                        "[inj_speed] [float] NOT NULL,"
+                        "[max_inj_pre] [float] NOT NULL,"
+                        "[max_inj_spd] [float] NOT NULL,"
+                        "[temp1] [float] NOT NULL,"
+                        "[temp2] [float] NOT NULL,"
+                        "[temp3] [float] NOT NULL,"
+                        "[temp4] [float] NOT NULL,"
+                        "[hopertemp] [float] NOT NULL,"
+                        "[oiltemp] [float] NOT NULL,"
+                        "[humidity] [float] NOT NULL,"
+                        "[temp1set] [float] NOT NULL,"
+                        "[temp2set] [float] NOT NULL,"
+                        "[temp3set] [float] NOT NULL,"
+                        "[temp4set] [float] NOT NULL,"
+                        "[hopersettemp] [float] NOT NULL,"
+                        "[oilsettemp] [float] NOT NULL,"
+                        "[moldtemp_high] [float] NOT NULL,"
+                        "[moldtemp_leftdown] [float] NOT NULL,"
+                        "[moldtemp_rightdown] [float] NOT NULL,"
+                        "[moldtempreal1] [float] NOT NULL,"
+                        "[moldtempreal2] [float] NOT NULL,"
+                        "[moldtempreal3] [float] NOT NULL,"
+                        "[moldtempreal4] [float] NOT NULL,"
+                        "[moldtempreal5] [float] NOT NULL,"
+                        "[moldtempreal6] [float] NOT NULL,"
+                        "[moldtempreal7] [float] NOT NULL,"
+                        "[moldtempreal8] [float] NOT NULL,"
+                        "[moldtempset1] [float] NOT NULL,"
+                        "[moldtempset2] [float] NOT NULL,"
+                        "[moldtempset3] [float] NOT NULL,"
+                        "[moldtempset4] [float] NOT NULL,"
+                        "[moldtempset5] [float] NOT NULL,"
+                        "[moldtempset6] [float] NOT NULL,"
+                        "[moldtempset7] [float] NOT NULL,"
+                        "[moldtempset8] [float] NOT NULL,"
+                     "CONSTRAINT [PK_iwonil_shot_data] PRIMARY KEY CLUSTERED"
+                    "("
+                    "    [idx_count] ASC"
+                    ")WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]"
+                    ") ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]"
+                    );
+    }
+
+
 }
 
 void MainWindow::on_deletebtn_clicked()

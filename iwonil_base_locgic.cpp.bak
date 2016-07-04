@@ -1,0 +1,130 @@
+#include "iwonil_base_locgic.h"
+#include "mslotitem.h"
+#include <QSqlError>
+
+iwonil_base_locgic::iwonil_base_locgic(QObject *parentmslot,QObject *parent) : QObject(parent)
+{
+    this->parentmslot = parentmslot;
+    initflag=false;
+    before_shotcount =-1;
+    current_shotcount =-1;
+}
+bool iwonil_base_locgic::init(){
+    mslotitem *parent_item = (mslotitem *)parentmslot; //부모 위젯
+    datamap = new QMap<QString,iwonilvalue *>;
+    ip = parent_item->ip->text();
+    litedb = QSqlDatabase::database("localdb");
+    QSqlQuery litequery1(litedb);
+    litequery1.exec("select * from systemset;");
+    litequery1.next();
+    if(litequery1.value("remoteservertype").toString().compare("MYSQL")==0){
+        iwonildb = QSqlDatabase::addDatabase("QMYSQL",parent_item->iptext);
+        typeDB = MYSQL;
+    }else if(litequery1.value("remoteservertype").toString().compare("ODBC")==0){
+        iwonildb = QSqlDatabase::addDatabase("QODBC",parent_item->iptext);
+        typeDB = ODBC;
+    }
+    iwonildb.setHostName(litequery1.value("remoteserverip").toString());
+    iwonildb.setDatabaseName(litequery1.value("remoteserverdbname").toString());
+    iwonildb.setPort(litequery1.value("remoteserverport").toInt());
+    iwonildb.setUserName(litequery1.value("remoteserverusername").toString());
+    iwonildb.setPassword(litequery1.value("remoteserveruserpassword").toString());
+
+    if(!iwonildb.open()){
+        qDebug()<<"iwonil DB not open";
+
+    }else {
+       qDebug()<<"iwonil DB open";
+    }
+
+    addrlist.append(mb_cycle_count);
+    addrlist.append(mb_inj_time1);
+    addrlist.append(mb_inj_time2);
+    addrlist.append(mb_filling_time);
+    addrlist.append(mb_cycle_time);
+    addrlist.append(mb_inj_position);
+    addrlist.append(mb_inj_pressure);
+    addrlist.append(mb_suckback_position);
+    addrlist.append(mb_cuthion_position);
+    addrlist.append(mb_switch_over_position);
+    addrlist.append(mb_switch_over_pressure);
+    addrlist.append(mb_switch_over_speed);
+    addrlist.append(mb_avg_inj_pre);
+    addrlist.append(mb_avg_chg_pre);
+    addrlist.append(mb_inj_speed);
+    addrlist.append(mb_max_inj_pre);
+    addrlist.append(mb_max_inj_spd);
+    addrlist.append(mb_temp1);
+    addrlist.append(mb_temp2);
+    addrlist.append(mb_temp3);
+    addrlist.append(mb_temp4);
+    addrlist.append(mb_oiltemp1);
+    addrlist.append(mb_oiltemp2);
+    addrlist.append(mb_temp1set);
+    addrlist.append(mb_temp2set);
+    addrlist.append(mb_temp3set);
+    addrlist.append(mb_temp4set);
+    addrlist.append(mb_hopertempset1);
+    addrlist.append(mb_hopertempset2);
+    addrlist.append(mb_oiltempset1);
+    addrlist.append(mb_oiltempset2);
+                    mb_
+    addrlist.append(mb_moldtempreal1);
+    addrlist.append(mb_moldtempreal2);
+    addrlist.append(mb_moldtempreal3);
+    addrlist.append(mb_moldtempreal4);
+    addrlist.append(mb_moldtempreal5);
+    addrlist.append(mb_moldtempreal6);
+    addrlist.append(mb_moldtempreal7);
+    addrlist.append(mb_moldtempreal8);
+                    mb_
+    addrlist.append(mb_moldtempset1);
+    addrlist.append(mb_moldtempset2);
+    addrlist.append(mb_moldtempset3);
+    addrlist.append(mb_moldtempset4);
+    addrlist.append(mb_moldtempset5);
+    addrlist.append(mb_moldtempset6);
+    addrlist.append(mb_moldtempset7);
+    addrlist.append(mb_moldtempset8);
+
+
+
+
+    modbus_thread = new iwonil_modbus_thread(this);
+    modbus_thread->start();
+    initflag=true;
+    return initflag;
+}
+void iwonil_base_locgic::loop(){
+    waitcondition.wakeAll();
+}
+
+void iwonil_base_locgic::iwonil_base_loop(){
+    mslotitem * parent_item = (mslotitem *)parentmslot; //부모 위젯
+    QString mancine_name = parent_item->machinename->text();
+    QSqlQuery mysqlquery1(iwonildb);
+    if(typeDB == MYSQL){
+
+    }else if(typeDB == ODBC){
+
+
+
+      QString insertquery=QString(""
+
+                                  );
+
+    }
+
+
+}
+
+void iwonil_base_locgic::slot_statue_update(bool statue){
+    mslotitem *parent_item = (mslotitem *)parentmslot; //부모 위젯
+    if(statue){
+        parent_item->set_connectlabel_text("<img src=\":/icon/icon/play-button16.png\">  connect");
+        parent_item->set_status_text("<img src=\":/icon/icon/play-button16.png\">  play");
+    }else {
+        parent_item->set_connectlabel_text("<img src=\":/icon/icon/light-bulb_red.png\">  disconnect");
+        parent_item->set_status_text("<img src=\":/icon/icon/stop.png\">  STOP");
+    }
+}

@@ -152,6 +152,7 @@ bool es600_base_locgic::init(){
      addrlist.append(mb_SHOTDATA_temp6);
      addrlist.append(mb_SHOTDATA_temp7);
      addrlist.append(mb_SHOTDATA_temp8);
+     addrlist.append(mb_SHOTDATA_oil_temp);
      addrlist.append(mb_moldname1);
      addrlist.append(mb_moldname2);
      addrlist.append(mb_moldname3);

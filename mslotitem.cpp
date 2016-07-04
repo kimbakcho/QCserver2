@@ -5,6 +5,7 @@ mslotitem::mslotitem(QString iptext, QString machinenametext, QObject *parent) :
 {
     remotedb  = QSqlDatabase::database("remotedb");
     localdb = QSqlDatabase::database("localdb");
+    parent_src = (QWidget *)parent;
     QSqlQuery mysqlquery1(remotedb);
     this->iptext = iptext;
     this->machinenametext = machinenametext;
@@ -19,8 +20,10 @@ mslotitem::mslotitem(QString iptext, QString machinenametext, QObject *parent) :
     type->addItem("gefranseven/");
     type->addItem("es600/");
     type->addItem("BNR/TAC1XX11");
+    type->addItem("iwonil/");
     status->setTextFormat(Qt::RichText);
     status->setText(tr("<img src=\":/icon/icon/stop.png\">  STOP"));
+    connect(setupbtn,SIGNAL(clicked(bool)),this,SLOT(setupbtn_push()));
     QSqlQuery litequery1(localdb);
     litequery1.exec("select * from systemset;");
     litequery1.next();
@@ -192,6 +195,7 @@ mslotitem::mslotitem(QString iptext, QString machinenametext, QObject *parent) :
     bnr_base_logic = new Bnr_base_locgic(this);
     gefran_base_logic = new gefranseven_base_logic(this);
     Es600_base_locgic = new es600_base_locgic(this);
+    Iwonil_base_locgic = new iwonil_base_locgic(this);
 
     connect(type,SIGNAL(currentTextChanged(QString)),this,SLOT(typechange(QString)));
     connect(&maintimer,SIGNAL(timeout()),this,SLOT(maintimer_timeout()));
@@ -226,6 +230,11 @@ void mslotitem::maintimer_timeout(){
             Es600_base_locgic->init();
         }
         Es600_base_locgic->loop();
+    }else if(type->currentText().split("/").at(0).compare("iwonil")==0){
+        if(!Iwonil_base_locgic->initflag){
+            Iwonil_base_locgic->init();
+        }
+        Iwonil_base_locgic->loop();
     }
 
 }
@@ -248,4 +257,12 @@ void mslotitem::set_status_text(QString data){
                                 .arg(data)
                                 .arg(machinenametext);
     mysqlquery1.exec(quertstr2);
+}
+void mslotitem::setupbtn_push(){
+    QString monitertype = type->currentText().split("/").at(0);
+    if(monitertype.compare("iwonil")==0){
+        iwonilsetup_popup *popup = new iwonilsetup_popup(machinenametext,parent_src);
+        popup->show();
+    }
+
 }
