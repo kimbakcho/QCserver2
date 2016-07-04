@@ -11,6 +11,10 @@
 #include <QSqlQuery>
 #include "globalheader.h"
 #include <QSqlError>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+
 
 namespace Ui {
 class MainWindow;
@@ -27,6 +31,7 @@ public:
     QSqlDatabase mdb;
     QSqlDatabase litedb;
     Serversetform *serversetform;
+    QNetworkAccessManager manager;
     int cellcurrentrow,cellcurrentcolumn;
     void litesql_init();
     void remotesql_connect();
@@ -53,6 +58,8 @@ private slots:
     void on_serverstartbtn_clicked();
 
     void on_serverstopbtn_clicked();
+
+    void manager_finished(QNetworkReply *reply);
 
 private:
     Ui::MainWindow *ui;

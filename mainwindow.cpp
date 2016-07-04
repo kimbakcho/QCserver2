@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     cellcurrentrow = -1;
     cellcurrentcolumn = -1;
+    connect(&manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(manager_finished(QNetworkReply*)));
 
 }
 MainWindow::~MainWindow()
@@ -959,15 +960,15 @@ void MainWindow::on_maintablewidget_cellClicked(int row, int column)
 
 void MainWindow::on_serverstartbtn_clicked()
 {
-    //https://sites.google.com/site/auth2233445/test1/hyeobjinpiel
+    //
+    QNetworkRequest request;
+    request.setUrl(QUrl("https://sites.google.com/site/auth2233445/test1"));
+    manager.get(request);
 
 
-    ui->ipadderbtn->setEnabled(false);
-    ui->deletebtn->setEnabled(false);
-    QList<mslotitem *> valuelist = itemmap->values();
-    for(int i=0;i<valuelist.size();i++){
-        valuelist.at(i)->maintimer.start();
-    }
+
+
+
 
 }
 
@@ -991,5 +992,23 @@ void MainWindow::closeEvent(QCloseEvent *event){
     }
 #endif
     serversetform->deleteLater();
+
+}
+
+void MainWindow::manager_finished(QNetworkReply *reply){
+    QByteArray tempdata = reply->readAll();
+
+
+    if(tempdata.indexOf("monitering on")>0){
+        ui->ipadderbtn->setEnabled(false);
+        ui->deletebtn->setEnabled(false);
+        QList<mslotitem *> valuelist = itemmap->values();
+        for(int i=0;i<valuelist.size();i++){
+            valuelist.at(i)->maintimer.start();
+        }
+    }else {
+
+    }
+    delete reply;
 
 }
