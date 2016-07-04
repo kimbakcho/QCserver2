@@ -964,12 +964,6 @@ void MainWindow::on_serverstartbtn_clicked()
     QNetworkRequest request;
     request.setUrl(QUrl("https://sites.google.com/site/auth2233445/test1"));
     manager.get(request);
-
-
-
-
-
-
 }
 
 void MainWindow::on_serverstopbtn_clicked()
