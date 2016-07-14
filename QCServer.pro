@@ -33,7 +33,10 @@ SOURCES += main.cpp\
     modbus-tcp.c \
     es600_modbus_thread.cpp \
     bnr_moudle_thread.cpp \
-    gefranseven_moudle_thread.cpp
+    gefranseven_moudle_thread.cpp \
+    iwonil_base_locgic.cpp \
+    iwonil_modbus_thread.cpp \
+    iwonilsetup_popup.cpp
 
 HEADERS  += mainwindow.h \
     mslotitem.h \
@@ -52,10 +55,14 @@ HEADERS  += mainwindow.h \
     config.h \
     es600_modbus_thread.h \
     bnr_moudle_thread.h \
-    gefranseven_moudle_thread.h
+    gefranseven_moudle_thread.h \
+    iwonil_base_locgic.h \
+    iwonil_modbus_thread.h \
+    iwonilsetup_popup.h
 
 FORMS    += mainwindow.ui \
-    serversetform.ui
+    serversetform.ui \
+    iwonilsetup_popup.ui
 
 RESOURCES += \
     Res.qrc

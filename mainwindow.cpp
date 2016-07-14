@@ -784,7 +784,7 @@ void MainWindow::remotesql_init(){
 
     }else if(type == ODBC){
         mysqlquery1.exec("CREATE TABLE [dbo].[shot_data]("
-                         "[idx] [numeric](9, 0) IDENTITY(1,1) NOT NULL DEFAULT '0',"
+                         "[idx] [numeric](9, 0) IDENTITY(1,1) NOT NULL ,"
                          "[Machine_Name] [varchar](32) NULL,"
                          "[Additional_Info_1] [varchar](32) NULL,"
                          "[Additional_Info_2] [varchar](32) NULL,"
@@ -836,7 +836,7 @@ void MainWindow::remotesql_init(){
 
     }else if(type == ODBC){
          mysqlquery1.exec("CREATE TABLE [dbo].[shot_data_rec]("
-                          "[rec_idx] [numeric](9, 0) IDENTITY(1,1) NOT NULL DEFAULT '0',"
+                          "[rec_idx] [numeric](9, 0) IDENTITY(1,1) NOT NULL ,"
                           "[Machine_Name] [varchar](32) NULL,"
                           "[Additional_Info_1] [varchar](32) NULL,"
                           "[Additional_Info_2] [varchar](32) NULL,"
