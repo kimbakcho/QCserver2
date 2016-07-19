@@ -68,14 +68,14 @@
 #define mb_moldtempreal7 36872
 #define mb_moldtempreal8 36873
         
-#define mb_moldtempset1 36831
-#define mb_moldtempset2 36832
-#define mb_moldtempset3 36833
-#define mb_moldtempset4 36834
-#define mb_moldtempset5 36835
-#define mb_moldtempset6 36836
-#define mb_moldtempset7 36837
-#define mb_moldtempset8 36838
+//#define mb_moldtempset1 36831
+//#define mb_moldtempset2 36832
+//#define mb_moldtempset3 36833
+//#define mb_moldtempset4 36834
+//#define mb_moldtempset5 36835
+//#define mb_moldtempset6 36836
+//#define mb_moldtempset7 36837
+//#define mb_moldtempset8 36838
 
 
 class iwonilvalue {

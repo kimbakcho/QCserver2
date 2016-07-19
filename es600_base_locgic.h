@@ -8,17 +8,16 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QNetworkReply>
-#if QT_VERSION < QT_VERSION_CHECK(5,6,0)
-#include <QWebPage>
-#include <QWebFrame>
-#include <QWebElement>
-#endif
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QWaitCondition>
 #include <QMutex>
 #include "es600_modbus_thread.h"
-#include "modbus.h"
+
+#include <QModbusDataUnit>
+#include <QModbusTcpClient>
+
+
 //modbus 주소값 매크로
 #define mb_object_count 1036
 #define mb_production_count 4006
@@ -236,8 +235,6 @@
 #define mb_chgtime 518
 
 
-
-
 class es600value {
     public:
         QString name;
@@ -275,8 +272,9 @@ public:
     int temp_down_atnumber;
     int temp_real_atnumber;
     int temp_onoff_atnumber;
+    QModbusTcpClient *qctx;
 
-    modbus_t *ctx;
+
 
     int typeDB;
     bool queryresult;
@@ -285,14 +283,19 @@ public:
 
 
 
+
     void es600_base_loop();
+
+    void TB_REC_save();
+
+
 
 signals:
 
 public slots:
     void slot_statue_update(bool statue);
-
-
+    void modbudread_ready();
+    void modbusstatue_change(int state);
 };
 
 #endif // ES600_BASE_LOCGIC_H

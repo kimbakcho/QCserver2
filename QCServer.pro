@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network sql
+QT       += core gui network sql serialbus serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 lessThan(QT_VERSION, 5.6): QT += webkit webkitwidgets

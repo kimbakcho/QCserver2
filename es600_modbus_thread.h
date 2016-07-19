@@ -16,7 +16,6 @@ public:
     explicit es600_modbus_thread(QObject *parent_src);
     bool playflag;
     QObject *parent;
-    quint16 reg[10];
 
 
 

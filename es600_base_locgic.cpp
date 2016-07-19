@@ -37,6 +37,20 @@ bool es600_base_locgic::init(){
         qDebug()<<"es600 DB open";
      }
 
+     qctx = new QModbusTcpClient(this);
+     qctx->setConnectionParameter(QModbusDevice::NetworkAddressParameter,parent_item->iptext);
+     qctx->setConnectionParameter(QModbusDevice::NetworkPortParameter,502);
+
+     qctx->setTimeout(3000);
+
+     if(!qctx->connectDevice()){
+         qDebug()<<"es600 qctx connect false";
+     }else {
+
+     }
+
+     connect(qctx,&QModbusClient::stateChanged,this,&es600_base_locgic::modbusstatue_change);
+
 
      addrlist.append(mb_object_count);
      addrlist.append(mb_production_count);
@@ -278,6 +292,7 @@ bool es600_base_locgic::init(){
 
 
 
+
      modbus_thread = new es600_modbus_thread(this);
      modbus_thread->start();
 
@@ -286,10 +301,17 @@ bool es600_base_locgic::init(){
 
 }
 void es600_base_locgic::loop(){
-    waitcondition.wakeAll();
+    if(qctx->state()==QModbusDevice::ConnectedState){
+        QModbusReply *reply;
+        for(int i=0;i<addrlist.size();i++){
+            reply = qctx->sendReadRequest(QModbusDataUnit(QModbusDataUnit::HoldingRegisters,addrlist.at(i),1),1);
+            connect(reply,SIGNAL(finished()),this,SLOT(modbudread_ready()));
+        }
+    }
 }
 //es600_modbus_thread 에서 현재 함수를 호출한다.
 void es600_base_locgic::es600_base_loop(){
+
     //example
 /*
     qDebug()<<"temp1_set="<<datamap->value(QString("%1").arg(mb_temp1_set))->value;
@@ -311,14 +333,14 @@ void es600_base_locgic::es600_base_loop(){
  */
     mslotitem * parent_item = (mslotitem *)parentmslot; //부모 위젯
     QString mancine_name = parent_item->machinename->text();
+//    qDebug()<<"es600 base th id = "<<QThread::currentThreadId();
 
     QSqlQuery mysqlquery1(es600db);
-    if(typeDB == MYSQL){
-    QString update_temp = QString("UPDATE `temp_table` SET ");
+    QString update_temp = QString("UPDATE temp_table SET ");
     QString temp_append ;
     for(int i=1;i<=16;i++){
         if(i == 16){
-            temp_append = QString("`temp%1_set`=%2, `temp%1_up`=%3, `temp%1_down`=%4, `temp%1_real`=%5, temp%1_onoff = %6 ")
+            temp_append = QString("temp%1_set=%2, temp%1_up=%3, temp%1_down=%4, temp%1_real=%5, temp%1_onoff = %6 ")
                                .arg(i)
                                .arg(datamap->value(QString("%1").arg(addrlist.at(temp_set_atnumber+i-1)))->value.toDouble()/10.0)
                                .arg(datamap->value(QString("%1").arg(addrlist.at(temp_up_atnumber+i-1)))->value.toDouble()/10.0)
@@ -327,7 +349,7 @@ void es600_base_locgic::es600_base_loop(){
                                .arg(datamap->value(QString("%1").arg(addrlist.at(temp_onoff_atnumber+i-1)))->value.toDouble()/10.0);
 
         }else {
-         temp_append = QString("`temp%1_set`=%2, `temp%1_up`=%3, `temp%1_down`=%4, `temp%1_real`=%5, temp%1_onoff = %6, ")
+         temp_append = QString("temp%1_set=%2, temp%1_up=%3, temp%1_down=%4, temp%1_real=%5, temp%1_onoff = %6, ")
                             .arg(i)
                             .arg(datamap->value(QString("%1").arg(addrlist.at(temp_set_atnumber+i-1)))->value.toDouble()/10.0)
                             .arg(datamap->value(QString("%1").arg(addrlist.at(temp_up_atnumber+i-1)))->value.toDouble()/10.0)
@@ -338,18 +360,34 @@ void es600_base_locgic::es600_base_loop(){
         }
          update_temp.append(temp_append);
     }
-    temp_append = QString("WHERE  `machine_name`=\'%1\'").arg(mancine_name);
+    temp_append = QString("WHERE machine_name=\'%1\'").arg(mancine_name);
 
     update_temp.append(temp_append);
 
-    queryresult = mysqlquery1.exec(update_temp);
-    }else if(typeDB == ODBC){
+    bool result = mysqlquery1.exec(update_temp);
 
+//            qDebug()<<mysqlquery1.lastQuery();
+//            qDebug()<<mysqlquery1.lastError().text();
+    if(result){
+
+    }else {
+        es600db.open();
+        qDebug()<<"es600 false";
     }
+
+    TB_REC_save();
+
+}
+void es600_base_locgic::TB_REC_save(){
+    mslotitem * parent_item = (mslotitem *)parentmslot; //부모 위젯
+    QString mancine_name = parent_item->machinename->text();
+
+    QSqlQuery mysqlquery1(es600db);
+
     current_shotcount = datamap->value(QString("%1").arg(mb_SHOTDATA_count))->value.toInt();
     if(before_shotcount<0){
         before_shotcount = current_shotcount;
-        modbus_write_register(ctx,mb_actstatus,0);
+        //modbus_write_register(ctx,mb_actstatus,0);
     }
     if(before_shotcount!=current_shotcount){
         before_shotcount=current_shotcount;
@@ -394,50 +432,48 @@ void es600_base_locgic::es600_base_loop(){
     if(actstatus == 1 && before_shotcount){
         current_shotcount = datamap->value(QString("%1").arg(mb_SHOTDATA_count))->value.toInt();
     }
-    if(typeDB == MYSQL){
 
-    }else if(typeDB == ODBC){
-        QString insertquery = QString("INSERT INTO [shot_data] "
-                                      "([Machine_Name]"
-                                      ",[Additional_Info_1]"
-                                      ",[Additional_Info_2]"
-                                      ",[TimeStamp]"
-                                      ",[Shot_Number]"
-                                      ",[NGmark]"
-                                      ",[Injection_Time]"
-                                      ",[Filling_Time]"
-                                      ",[Plasticizing_Time]"
-                                      ",[Cycle_Time]"
-                                      ",[Clamp_Close_Time]"
-                                      ",[Cushion_Position]"
-                                      ",[Switch_Over_Position]"
-                                      ",[Plasticizing_Position]"
-                                      ",[Clamp_Open_Position]"
-                                      ",[Max_Injection_Speed]"
-                                      ",[Max_Screw_RPM]"
-                                      ",[Average_Screw_RPM]"
-                                      ",[Max_Injection_Pressure]"
-                                      ",[Max_Switch_Over_Pressure]"
-                                      ",[Max_Back_Pressure]"
-                                      ",[Average_Back_Pressure]"
-                                      ",[Barrel_Temperature_1]"
-                                      ",[Barrel_Temperature_2]"
-                                      ",[Barrel_Temperature_3]"
-                                      ",[Barrel_Temperature_4]"
-                                      ",[Barrel_Temperature_5]"
-                                      ",[Barrel_Temperature_6]"
-                                      ",[Barrel_Temperature_7]"
-                                      ",[Hopper_Temperature]"
-                                      ",[Mold_Temperature_1]"
-                                      ",[Mold_Temperature_2]"
-                                      ",[Mold_Temperature_3]"
-                                      ",[Mold_Temperature_4]"
-                                      ",[Mold_Temperature_5]"
-                                      ",[Mold_Temperature_6]"
-                                      ",[Mold_Temperature_7]"
-                                      ",[Mold_Temperature_8]"
-                                      ",[Mold_Temperature_9]"
-                                      ",[Mold_Temperature_10]) "
+        QString insertquery = QString("INSERT INTO shot_data "
+                                      "(Machine_Name"
+                                      ",Additional_Info_1"
+                                      ",Additional_Info_2"
+                                      ",TimeStamp"
+                                      ",Shot_Number"
+                                      ",NGmark"
+                                      ",Injection_Time"
+                                      ",Filling_Time"
+                                      ",Plasticizing_Time"
+                                      ",Cycle_Time"
+                                      ",Clamp_Close_Time"
+                                      ",Cushion_Position"
+                                      ",Switch_Over_Position"
+                                      ",Plasticizing_Position"
+                                      ",Clamp_Open_Position"
+                                      ",Max_Injection_Speed"
+                                      ",Max_Screw_RPM"
+                                      ",Average_Screw_RPM"
+                                      ",Max_Injection_Pressure"
+                                      ",Max_Switch_Over_Pressure"
+                                      ",Max_Back_Pressure"
+                                      ",Average_Back_Pressure"
+                                      ",Barrel_Temperature_1"
+                                      ",Barrel_Temperature_2"
+                                      ",Barrel_Temperature_3"
+                                      ",Barrel_Temperature_4"
+                                      ",Barrel_Temperature_5"
+                                      ",Barrel_Temperature_6"
+                                      ",Barrel_Temperature_7"
+                                      ",Hopper_Temperature"
+                                      ",Mold_Temperature_1"
+                                      ",Mold_Temperature_2"
+                                      ",Mold_Temperature_3"
+                                      ",Mold_Temperature_4"
+                                      ",Mold_Temperature_5"
+                                      ",Mold_Temperature_6"
+                                      ",Mold_Temperature_7"
+                                      ",Mold_Temperature_8"
+                                      ",Mold_Temperature_9"
+                                      ",Mold_Temperature_10) "
                                 "VALUES ("
                                       +QString("'%1'").arg(mancine_name)+","
                                       +QString("'%1'").arg(moldname)+","
@@ -481,6 +517,10 @@ void es600_base_locgic::es600_base_loop(){
                                       +"0.0)"
                    );
         queryresult = mysqlquery1.exec(insertquery);
+
+
+//        qDebug()<<mysqlquery1.lastQuery();
+//        qDebug()<<mysqlquery1.lastError().text();
 
         QString Inj_Velocitystr;
         int injstep = datamap->value(QString("%1").arg(mb_injstep))->value.toInt();
@@ -606,7 +646,7 @@ void es600_base_locgic::es600_base_loop(){
             hldPressurestr.append(QString("%1/").arg(0.0));
         }
         if(hldstep>2){
-            hldPressurestr.append(QString("%1/").arg(hldPressure[2]));
+            hldPressurestr.append(QString("%1").arg(hldPressure[2]));
         }else{
             hldPressurestr.append(QString("%1").arg(0.0));
         }
@@ -627,7 +667,7 @@ void es600_base_locgic::es600_base_loop(){
             hldTimestr.append(QString("%1/").arg(0.0));
         }
         if(hldstep>2){
-            hldTimestr.append(QString("%1/").arg(hldTime[2]));
+            hldTimestr.append(QString("%1").arg(hldTime[2]));
         }else{
             hldTimestr.append(QString("%1").arg(0.0));
         }
@@ -648,7 +688,7 @@ void es600_base_locgic::es600_base_loop(){
             hldVelstr.append(QString("%1/").arg(0.0));
         }
         if(hldstep>2){
-            hldVelstr.append(QString("%1/").arg(hldVel[2]));
+            hldVelstr.append(QString("%1").arg(hldVel[2]));
         }else{
             hldVelstr.append(QString("%1").arg(0.0));
         }
@@ -793,31 +833,30 @@ void es600_base_locgic::es600_base_loop(){
 
 
 
-        insertquery =QString("INSERT INTO [shot_data_rec]"
-                "([Machine_Name]"
-                ",[Additional_Info_1]"
-                ",[Additional_Info_2]"
-                ",[TimeStamp]"
-                ",[Shot_Number]"
-                ",[Inj_Velocity]"
-                ",[Inj_Pressure]"
-                ",[Inj_Position]"
-                ",[SOV_Time]"
-                ",[SOV_Position]"
-                ",[Hld_Pressure]"
-                ",[Hld_Time]"
-                ",[Hld_Vel]"
-                ",[Chg_Position]"
-                ",[Chg_Speed]"
-                ",[BackPressure]"
-                ",[Suckback_Position]"
-                ",[Suckback_Speed]"
-                ",[Barrel_Temperature]"
-                ",[Mold_Temperature]"
-                ",[Timer])"
+        insertquery =QString("INSERT INTO shot_data_rec"
+                "(Machine_Name"
+                ",Additional_Info_1"
+                ",Additional_Info_2"
+                ",TimeStamp"
+                ",Shot_Number"
+                ",Inj_Velocity"
+                ",Inj_Pressure"
+                ",Inj_Position"
+                ",SOV_Time"
+                ",SOV_Position"
+                ",Hld_Pressure"
+                ",Hld_Time"
+                ",Hld_Vel"
+                ",Chg_Position"
+                ",Chg_Speed"
+                ",BackPressure"
+                ",Suckback_Position"
+                ",Suckback_Speed"
+                ",Barrel_Temperature"
+                ",Mold_Temperature"
+                ",Timer)"
           "VALUES"
-                "("
-                +QString("'%1'").arg(mancine_name)+","
+                "("+QString("'%1'").arg(mancine_name)+","
                 +QString("'%1'").arg(moldname)+","
                 +"''"+","
                 +"\'"+QDate::currentDate().toString("yyyy-MM-dd ")+QTime::currentTime().toString("HH:mm:ss")+"\'"+","
@@ -841,9 +880,8 @@ void es600_base_locgic::es600_base_loop(){
              );
 
         queryresult = mysqlquery1.exec(insertquery);
-        qDebug()<<mysqlquery1.lastQuery();
-        qDebug()<<mysqlquery1.lastError().text();
-    }
+//        qDebug()<<mysqlquery1.lastQuery();
+//        qDebug()<<mysqlquery1.lastError().text();
     }
 
     if(queryresult){
@@ -854,6 +892,8 @@ void es600_base_locgic::es600_base_loop(){
     }
 
 }
+
+
 void es600_base_locgic::slot_statue_update(bool statue){
     mslotitem *parent_item = (mslotitem *)parentmslot; //부모 위젯
     if(statue){
@@ -865,3 +905,37 @@ void es600_base_locgic::slot_statue_update(bool statue){
     }
 }
 
+
+void es600_base_locgic::modbudread_ready(){
+
+    auto reply = qobject_cast<QModbusReply *>(sender());
+    if (!reply)
+            return;
+    const QModbusDataUnit unit = reply->result();
+    if (reply->error() == QModbusDevice::NoError) {
+        int startaddress = unit.startAddress();
+        int value = unit.value(0);
+        QString startaddress_str = QString("%1").arg(startaddress);
+        if(!datamap->contains(startaddress_str)){
+            datamap->insert(startaddress_str,new es600value(startaddress_str,QString("%1").arg(value)));
+        }else {
+            es600value *tempvalue = datamap->value(startaddress_str);
+            tempvalue->value = QString("%1").arg(value);
+        }
+        if(startaddress == addrlist.last()){  //마지막 데이터 가지 받으면 loop 실행
+            waitcondition.wakeAll();
+        }
+    }
+}
+
+void es600_base_locgic::modbusstatue_change(int state){
+
+    if(state == QModbusDevice::ConnectedState){
+        slot_statue_update(true);
+    }else if(state == QModbusDevice::ConnectingState){
+        slot_statue_update(false);
+    }else if(state == QModbusDevice::UnconnectedState){
+        qctx->connectDevice();
+        slot_statue_update(false);
+    }
+}
