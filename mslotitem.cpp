@@ -17,9 +17,9 @@ mslotitem::mslotitem(QString iptext, QString machinenametext, QObject *parent) :
     setupbtn = new QPushButton(tr("setup"));
     connectlabel->setTextFormat(Qt::RichText);
     connectlabel->setText(tr("<img src=\":/icon/icon/light-bulb_red.png\">  disconnect"));
-    type->addItem("gefranseven/");
+//    type->addItem("gefranseven/");
     type->addItem("es600/");
-    type->addItem("BNR/TAC1XX11");
+//    type->addItem("BNR/TAC1XX11");
     type->addItem("iwonil/");
     status->setTextFormat(Qt::RichText);
     status->setText(tr("<img src=\":/icon/icon/stop.png\">  STOP"));
@@ -192,8 +192,8 @@ mslotitem::mslotitem(QString iptext, QString machinenametext, QObject *parent) :
 
 
     maintimer.setInterval(MAINTIMERTIME);
-    bnr_base_logic = new Bnr_base_locgic(this);
-    gefran_base_logic = new gefranseven_base_logic(this);
+//    bnr_base_logic = new Bnr_base_locgic(this);
+//    gefran_base_logic = new gefranseven_base_logic(this);
     Es600_base_locgic = new es600_base_locgic(this);
     Iwonil_base_locgic = new iwonil_base_locgic(this);
 

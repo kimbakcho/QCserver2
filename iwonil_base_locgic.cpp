@@ -37,6 +37,20 @@ bool iwonil_base_locgic::init(){
        qDebug()<<"iwonil DB open";
     }
 
+    qctx = new QModbusTcpClient(this);
+    qctx->setConnectionParameter(QModbusDevice::NetworkAddressParameter,parent_item->iptext);
+    qctx->setConnectionParameter(QModbusDevice::NetworkPortParameter,502);
+
+    qctx->setTimeout(3000);
+
+    if(!qctx->connectDevice()){
+        qDebug()<<"es600 qctx connect false";
+    }else {
+
+    }
+    connect(qctx,&QModbusClient::stateChanged,this,&iwonil_base_locgic::modbusstatue_change);
+
+
     addrlist.append(mb_cycle_count);
     addrlist.append(mb_inj_time1);
     addrlist.append(mb_inj_time2);
@@ -86,16 +100,14 @@ bool iwonil_base_locgic::init(){
     addrlist.append(mb_moldtempreal7);
     addrlist.append(mb_moldtempreal8);
                   
-    addrlist.append(mb_moldtempset1);
-    addrlist.append(mb_moldtempset2);
-    addrlist.append(mb_moldtempset3);
-    addrlist.append(mb_moldtempset4);
-    addrlist.append(mb_moldtempset5);
-    addrlist.append(mb_moldtempset6);
-    addrlist.append(mb_moldtempset7);
-    addrlist.append(mb_moldtempset8);
-
-
+    addrlist.append(mb_iwonilmoldtempset1);
+    addrlist.append(mb_iwonilmoldtempset2);
+    addrlist.append(mb_iwonilmoldtempset3);
+    addrlist.append(mb_iwonilmoldtempset4);
+    addrlist.append(mb_iwonilmoldtempset5);
+    addrlist.append(mb_iwonilmoldtempset6);
+    addrlist.append(mb_iwonilmoldtempset7);
+    addrlist.append(mb_iwonilmoldtempset8);
 
 
     modbus_thread = new iwonil_modbus_thread(this);
@@ -104,10 +116,34 @@ bool iwonil_base_locgic::init(){
     return initflag;
 }
 void iwonil_base_locgic::loop(){
-    waitcondition.wakeAll();
+    if(qctx->state()==QModbusDevice::ConnectedState){
+        QModbusReply *reply;
+        for(int i=0;i<addrlist.size();i++){
+            reply = qctx->sendReadRequest(QModbusDataUnit(QModbusDataUnit::HoldingRegisters,addrlist.at(i),1),1);
+            connect(reply,SIGNAL(finished()),this,SLOT(modbudread_ready()));
+        }
+    }
 }
 
 void iwonil_base_locgic::iwonil_base_loop(){
+
+
+    iwonil_REC_save();
+
+
+}
+
+void iwonil_base_locgic::slot_statue_update(bool statue){
+    mslotitem *parent_item = (mslotitem *)parentmslot; //부모 위젯
+    if(statue){
+        parent_item->set_connectlabel_text("<img src=\":/icon/icon/play-button16.png\">  connect");
+        parent_item->set_status_text("<img src=\":/icon/icon/play-button16.png\">  play");
+    }else {
+        parent_item->set_connectlabel_text("<img src=\":/icon/icon/light-bulb_red.png\">  disconnect");
+        parent_item->set_status_text("<img src=\":/icon/icon/stop.png\">  STOP");
+    }
+}
+void iwonil_base_locgic::iwonil_REC_save(){
     mslotitem * parent_item = (mslotitem *)parentmslot; //부모 위젯
     QString mancine_name = parent_item->machinename->text();
     QSqlQuery mysqlquery1(iwonildb);
@@ -187,14 +223,14 @@ void iwonil_base_locgic::iwonil_base_loop(){
     double moldtempreal7 = datamap->value(QString("%1").arg(mb_moldtempreal7))->value.toDouble();
     double moldtempreal8 = datamap->value(QString("%1").arg(mb_moldtempreal8))->value.toDouble();
 
-    double mmoldtempset1 = datamap->value(QString("%1").arg(mb_moldtempset1))->value.toDouble();
-    double mmoldtempset2 = datamap->value(QString("%1").arg(mb_moldtempset2))->value.toDouble();
-    double mmoldtempset3 = datamap->value(QString("%1").arg(mb_moldtempset3))->value.toDouble();
-    double mmoldtempset4 = datamap->value(QString("%1").arg(mb_moldtempset4))->value.toDouble();
-    double mmoldtempset5 = datamap->value(QString("%1").arg(mb_moldtempset5))->value.toDouble();
-    double mmoldtempset6 = datamap->value(QString("%1").arg(mb_moldtempset6))->value.toDouble();
-    double mmoldtempset7 = datamap->value(QString("%1").arg(mb_moldtempset7))->value.toDouble();
-    double mmoldtempset8 = datamap->value(QString("%1").arg(mb_moldtempset8))->value.toDouble();
+    double mmoldtempset1 = datamap->value(QString("%1").arg(mb_iwonilmoldtempset1))->value.toDouble();
+    double mmoldtempset2 = datamap->value(QString("%1").arg(mb_iwonilmoldtempset2))->value.toDouble();
+    double mmoldtempset3 = datamap->value(QString("%1").arg(mb_iwonilmoldtempset3))->value.toDouble();
+    double mmoldtempset4 = datamap->value(QString("%1").arg(mb_iwonilmoldtempset4))->value.toDouble();
+    double mmoldtempset5 = datamap->value(QString("%1").arg(mb_iwonilmoldtempset5))->value.toDouble();
+    double mmoldtempset6 = datamap->value(QString("%1").arg(mb_iwonilmoldtempset6))->value.toDouble();
+    double mmoldtempset7 = datamap->value(QString("%1").arg(mb_iwonilmoldtempset7))->value.toDouble();
+    double mmoldtempset8 = datamap->value(QString("%1").arg(mb_iwonilmoldtempset8))->value.toDouble();
     current_shotcount = cycle_count;
     if(before_shotcount<=0){
         before_shotcount = current_shotcount;
@@ -317,16 +353,40 @@ void iwonil_base_locgic::iwonil_base_loop(){
         }
     }
 
-
 }
 
-void iwonil_base_locgic::slot_statue_update(bool statue){
-    mslotitem *parent_item = (mslotitem *)parentmslot; //부모 위젯
-    if(statue){
-        parent_item->set_connectlabel_text("<img src=\":/icon/icon/play-button16.png\">  connect");
-        parent_item->set_status_text("<img src=\":/icon/icon/play-button16.png\">  play");
-    }else {
-        parent_item->set_connectlabel_text("<img src=\":/icon/icon/light-bulb_red.png\">  disconnect");
-        parent_item->set_status_text("<img src=\":/icon/icon/stop.png\">  STOP");
+void iwonil_base_locgic::modbudread_ready(){
+
+    auto reply = qobject_cast<QModbusReply *>(sender());
+    if (!reply)
+            return;
+    const QModbusDataUnit unit = reply->result();
+    if (reply->error() == QModbusDevice::NoError) {
+        int startaddress = unit.startAddress();
+        int value = unit.value(0);
+        QString startaddress_str = QString("%1").arg(startaddress);
+        if(!datamap->contains(startaddress_str)){
+            datamap->insert(startaddress_str,new iwonilvalue(startaddress_str,QString("%1").arg(value)));
+        }else {
+            iwonilvalue *tempvalue = datamap->value(startaddress_str);
+            tempvalue->value = QString("%1").arg(value);
+        }
+        if(startaddress == addrlist.last()){  //마지막 데이터 가지 받으면 loop 실행
+            waitcondition.wakeAll();
+        }
     }
 }
+
+
+void iwonil_base_locgic::modbusstatue_change(int state){
+
+    if(state == QModbusDevice::ConnectedState){
+        slot_statue_update(true);
+    }else if(state == QModbusDevice::ConnectingState){
+        slot_statue_update(false);
+    }else if(state == QModbusDevice::UnconnectedState){
+        qctx->connectDevice();
+        slot_statue_update(false);
+    }
+}
+

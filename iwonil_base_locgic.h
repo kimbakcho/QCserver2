@@ -8,17 +8,15 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QNetworkReply>
-#if QT_VERSION < QT_VERSION_CHECK(5,6,0)
-#include <QWebPage>
-#include <QWebFrame>
-#include <QWebElement>
-#endif
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QWaitCondition>
 #include <QMutex>
 #include "iwonil_modbus_thread.h"
 #include "modbus.h"
+
+#include <QModbusDataUnit>
+#include <QModbusTcpClient>
 
 #define mb_cycle_count 20625
 #define mb_inj_time1 20668
@@ -68,14 +66,14 @@
 #define mb_moldtempreal7 36872
 #define mb_moldtempreal8 36873
         
-//#define mb_moldtempset1 36831
-//#define mb_moldtempset2 36832
-//#define mb_moldtempset3 36833
-//#define mb_moldtempset4 36834
-//#define mb_moldtempset5 36835
-//#define mb_moldtempset6 36836
-//#define mb_moldtempset7 36837
-//#define mb_moldtempset8 36838
+#define mb_iwonilmoldtempset1 36831
+#define mb_iwonilmoldtempset2 36832
+#define mb_iwonilmoldtempset3 36833
+#define mb_iwonilmoldtempset4 36834
+#define mb_iwonilmoldtempset5 36835
+#define mb_iwonilmoldtempset6 36836
+#define mb_iwonilmoldtempset7 36837
+#define mb_iwonilmoldtempset8 36838
 
 
 class iwonilvalue {
@@ -111,7 +109,9 @@ public:
     QSqlDatabase litedb;
     QVector<int> addrlist;
 
-     modbus_t *ctx;
+//     modbus_t *ctx;
+
+     QModbusTcpClient *qctx;
 
      int typeDB;
      bool queryresult;
@@ -119,10 +119,16 @@ public:
      int current_shotcount;
      void iwonil_base_loop();
 
+     void iwonil_REC_save();
+
+
+
 signals:
 
 public slots:
      void slot_statue_update(bool statue);
+     void modbudread_ready();
+     void modbusstatue_change(int state);
 };
 
 #endif // IWONIL_BASE_LOCGIC_H
